@@ -1,4 +1,4 @@
-(defproject midi-smusher "0.1.0-SNAPSHOT"
+(defproject midi-mash "0.1.0-SNAPSHOT"
   :description "Extract data out of midi files"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

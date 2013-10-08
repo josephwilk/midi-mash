@@ -1,4 +1,4 @@
-(ns midi-smusher.core
+(ns midi-mash.core
   "Takes a csv file generate from a midi (via http://www.fourmilab.ch/webtools/midicsv/)
    and turns it into a list of event maps"
   (:require
@@ -6,14 +6,19 @@
    [clojure.data.csv :as csv]
    [clojure.java.io  :as io]))
 
+(def current-instrument (atom "0"))
+
 (defn pitch-of [row] (string/trim (nth row 4)))
 (defn type-of  [row] (string/trim (nth row 2)))
 (defn instrument-of [row] (string/trim (nth row 4)))
 
+(defn on-note? [col] (= "Note_on_c") (:type col))
+(defn off-note? [col] (= "Note_off_c") (:type col))
+(defn instrument-set-event? [row] (= "Program_c" (type-of row)))
+
 (defn durations [[k v ]]
   (reduce (fn [r [on off]]
-            (if (and (= "Note_on_c"  (:type on))
-                     (= "Note_off_c" (:type off)))
+            (if (and (on-note? on) (off-note? off))
               (conj r (-> on (assoc :duration (- (:time off) (:time on)))
                           (dissoc :type)))
               (do
@@ -21,8 +26,6 @@
                 r)))
           []
           (partition 2 v)))
-
-(def current-instrument (atom "0"))
 
 (defn row->map [[track time type channel pitch velocity :as row]]
   {:time       (Integer/parseInt (string/trim time))
@@ -33,17 +36,20 @@
    :instrument (Integer/parseInt @current-instrument)})
 
 (defn row->pitch-event [pitch-map row]
-  (when (= (type-of row) "Program_c") (reset! current-instrument (instrument-of row)))
-  (if (> (count row) 4)
-    (let [pitch (pitch-of row)]
-      (assoc pitch-map pitch (conj (or (pitch-map pitch) [])
-                                   (row->map row))))
-    pitch-map))
+  (if (instrument-set-event? row)
+    (do
+      (reset! current-instrument (instrument-of row))
+      pitch-map)
+    (if (> (count row) 4)
+      (let [pitch (pitch-of row)]
+        (assoc pitch-map pitch (conj (or (pitch-map pitch) [])
+                                     (row->map row))))
+      pitch-map)))
 
 (defn csv->events [file]
-  (with-open [in-file (io/reader file)]
-    (mapcat durations
-     (reduce row->pitch-event {} (csv/read-csv in-file)))))
+  (sort (fn [a b] (< (:time a) (:time b)))
+   (with-open [in-file (io/reader file)]
+     (mapcat durations
+             (reduce row->pitch-event {} (csv/read-csv in-file))))))
 
 (comment (csv->events "midnight.csv"))
-
