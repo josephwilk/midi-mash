@@ -1,5 +1,7 @@
 # Midi MASH
 
+[![Build Status](https://travis-ci.org/josephwilk/midi-mash.png?branch=master)](https://travis-ci.org/josephwilk/midi-mash)
+
 Convert midi files exported as csv files into something useful for say using with Overtone.
 
 ### Install midi2csv
