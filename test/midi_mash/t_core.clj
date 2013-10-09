@@ -1,4 +1,4 @@
-(ns midi-smusher.core-test
+(ns midi-mash.t-core
   (:use midje.sweet
         midi-mash.core))
 
