@@ -40,15 +40,16 @@
        (or (= "Note_on_c" (type-of row)) (= "Note_off_c" (type-of row)))))
 
 (defn row->pitch-event [pitch-map row]
-  (if (instrument-set-event? row)
-    (do
-      (reset! current-instrument (instrument-of row))
-      pitch-map)
-    (if (note-type? row)
-      (let [pitch (pitch-of row)]
-        (assoc pitch-map pitch (conj (or (pitch-map pitch) [])
-                                     (row->map row))))
-      pitch-map)))
+  (cond
+   (instrument-set-event? row)
+   (do (reset! current-instrument (instrument-of row))
+       pitch-map)
+
+   (note-type? row)
+   (let [pitch (pitch-of row)]
+     (assoc pitch-map pitch (conj (or (pitch-map pitch) [])
+                                  (row->map row))))
+   :else pitch-map))
 
 (defn csv->events [file]
   (sort (fn [a b] (< (:time a) (:time b)))
