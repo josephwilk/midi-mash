@@ -1,9 +1,11 @@
 # Midi MASH
 
-Install midi2csv
+Convert midi files exported as csv files into something useful for say using with Overtone.
+
+### Install midi2csv
 
 ```shell
-wget http://www.fourmilab.ch/webtools/midicsv/midicsv-1.1.tar.gz && tar -xf midicsv-1.1.tar.gz && cd midicsv-1.1 && make && make install
+wget http://www.fourmilab.ch/webtools/midicsv/midicsv-1.1.tar.gz && tar -xf midicsv-1.1.tar.gz && cd midicsv-1.1 && make && sudo make install
 
 midi2csv your-midi-file.mid > your-midi.csv
 ```
