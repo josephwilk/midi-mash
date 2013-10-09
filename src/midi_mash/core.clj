@@ -35,12 +35,16 @@
    :velocity   (Integer/parseInt (string/trim (or velocity 0)))
    :instrument (Integer/parseInt @current-instrument)})
 
+(defn- note-type? [row]
+  (and (> (count row) 4)
+       (or (= "Note_on_c" (type-of row)) (= "Note_off_c" (type-of row)))))
+
 (defn row->pitch-event [pitch-map row]
   (if (instrument-set-event? row)
     (do
       (reset! current-instrument (instrument-of row))
       pitch-map)
-    (if (> (count row) 4)
+    (if (note-type? row)
       (let [pitch (pitch-of row)]
         (assoc pitch-map pitch (conj (or (pitch-map pitch) [])
                                      (row->map row))))
